@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albert Escrichs — Portfolio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+:root{
+  --pink:#e0007f; --pink-l:rgba(224,0,127,.08); --pink-m:rgba(224,0,127,.15);
+  --dark:#0d0d0d; --mid:#444; --gray:#888;
+  --border:#e8e8e8; --bg:#f7f7f7; --white:#fff;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dark);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+
+/* ── CURSOR ── */
+.cursor{width:10px;height:10px;border-radius:50%;background:var(--pink);position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:multiply;transition:width .2s,height .2s;}
+.cursor-ring{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--pink);position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);opacity:.45;transition:width .3s,height .3s;}
+.cursor.h{width:20px;height:20px;}.cursor-ring.h{width:56px;height:56px;opacity:.15;}
+@media(hover:none){.cursor,.cursor-ring{display:none;}}
+
+/* ── PROGRESS ── */
+.progress{position:fixed;top:0;left:0;height:2px;background:var(--pink);z-index:500;width:0;transition:width .08s linear;}
+
+/* ── NAV ── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:60px;padding:0 48px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  background:transparent;transition:background .35s,border-color .35s,backdrop-filter .35s;
+  border-bottom:1px solid transparent;
+}
+.nav.s{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-color:var(--border);}
+.nav-logo{font-size:14px;font-weight:900;letter-spacing:-.3px;color:#0d0d0d;text-decoration:none;display:flex;align-items:center;gap:1px;}
+.nav-links{display:flex;align-items:center;gap:28px;}
+.nav-links a{font-size:11px;font-weight:600;color:var(--gray);text-decoration:none;position:relative;transition:color .2s;}
+.nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1.5px;background:var(--pink);transform:scaleX(0);transform-origin:left;transition:transform .25s;}
+.nav-links a:hover,.nav-links a.active{color:var(--dark);}
+.nav-links a:hover::after,.nav-links a.active::after{transform:scaleX(1);}
+.nav-cta{display:flex;align-items:center;gap:10px;}
+.btn{background:var(--pink);color:#fff;border:none;padding:8px 20px;font-family:inherit;font-weight:700;font-size:11px;cursor:pointer;border-radius:100px;letter-spacing:.3px;transition:transform .2s,box-shadow .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(224,0,127,.28);}
+.btn-ghost{background:transparent;color:var(--dark);border:1.5px solid var(--border);}
+.btn-ghost:hover{border-color:var(--pink);color:var(--pink);box-shadow:none;}
+.nav-menu-btn{display:none;background:none;border:none;cursor:pointer;padding:4px;}
+
+/* Mobile nav */
+.mobile-nav{position:fixed;top:0;right:-100%;width:280px;height:100vh;background:var(--white);z-index:300;padding:80px 32px 40px;box-shadow:-4px 0 40px rgba(0,0,0,.1);transition:right .4s cubic-bezier(.77,0,.175,1);display:flex;flex-direction:column;gap:8px;}
+.mobile-nav.open{right:0;}
+.mobile-nav a{font-size:18px;font-weight:700;color:var(--dark);text-decoration:none;padding:10px 0;border-bottom:1px solid var(--border);transition:color .2s;}
+.mobile-nav a:hover{color:var(--pink);}
+.mobile-close{position:absolute;top:20px;right:24px;background:none;border:none;cursor:pointer;font-size:22px;color:var(--gray);}
+.nav-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:299;opacity:0;pointer-events:none;transition:opacity .3s;}
+.nav-overlay.on{opacity:1;pointer-events:all;}
+
+/* ── SCROLL TOP ── */
+.scroll-top{position:fixed;bottom:32px;right:32px;z-index:150;width:44px;height:44px;border-radius:50%;background:var(--dark);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,background .2s;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.scroll-top.on{opacity:1;transform:translateY(0);}
+.scroll-top:hover{background:var(--pink);}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  background:var(--white);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:120px 48px 80px;
+  position:relative;overflow:hidden;
+  border-bottom:1px solid var(--border);
+}
+.hero::before{
+  content:'PORTFOLIO';position:absolute;right:-40px;top:50%;transform:translateY(-50%);
+  font-size:clamp(80px,14vw,180px);font-weight:900;letter-spacing:-8px;
+  color:rgba(0,0,0,.028);pointer-events:none;white-space:nowrap;line-height:1;
+}
+.hero-inner{max-width:1100px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+.hero-left{}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pink);margin-bottom:20px;opacity:0;transform:translateX(-20px);}
+.hero-eyebrow::before{content:'';width:24px;height:1.5px;background:var(--pink);}
+h1.hero-title{font-size:clamp(40px,5.5vw,68px);font-weight:900;line-height:.95;letter-spacing:-3px;color:var(--dark);overflow:hidden;}
+h1.hero-title .tl{display:block;transform:translateY(110%);}
+h1.hero-title em{font-style:normal;color:var(--pink);}
+.hero-desc{margin-top:24px;font-size:14px;color:var(--mid);line-height:1.8;border-left:2px solid var(--pink);padding-left:16px;opacity:0;transform:translateY(16px);}
+.hero-desc strong{color:var(--dark);}
+.hero-actions{margin-top:32px;display:flex;flex-wrap:wrap;gap:12px;opacity:0;}
+.hero-right{display:flex;flex-direction:column;gap:20px;opacity:0;}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.hstat{background:var(--white);padding:20px;transition:background .2s;}
+.hstat:hover{background:var(--pink-l);}
+.hstat-n{font-size:32px;font-weight:900;color:var(--dark);letter-spacing:-2px;line-height:1;}
+.hstat-n span{color:var(--pink);}
+.hstat-l{font-size:10px;color:var(--gray);font-weight:500;margin-top:3px;}
+.hero-cats{display:flex;flex-wrap:wrap;gap:6px;}
+.cat-pill{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--border);border-radius:100px;padding:5px 13px 5px 9px;font-size:10.5px;font-weight:600;color:var(--mid);background:var(--white);cursor:default;transition:all .2s;}
+.cat-pill:hover,.cat-pill.active-cat{border-color:var(--pink);color:var(--pink);background:var(--pink-l);}
+.cat-pill svg{width:12px;height:12px;}
+
+/* ── FEATURED PROJECT ── */
+.featured{background:var(--white);border-bottom:1px solid var(--border);padding:72px 48px;}
+.featured-inner{max-width:1100px;margin:0 auto;}
+.sec-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pink);margin-bottom:10px;}
+.sec-eyebrow::before{content:'';width:20px;height:1.5px;background:var(--pink);}
+h2.sec-title{font-size:clamp(22px,3vw,32px);font-weight:900;letter-spacing:-1px;color:var(--dark);margin-bottom:36px;line-height:1.1;}
+.featured-card{
+  display:grid;grid-template-columns:1fr 420px;
+  border:1.5px solid var(--border);border-radius:16px;overflow:hidden;
+  transition:box-shadow .3s,border-color .3s;cursor:pointer;
+}
+.featured-card:hover{box-shadow:0 12px 48px rgba(0,0,0,.10);border-color:var(--pink);}
+.featured-img{
+  background:linear-gradient(135deg,#f0f0f0 0%,#e0e0e0 100%);
+  min-height:400px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.featured-img::after{content:'';position:absolute;inset:0;background:linear-gradient(45deg,rgba(224,0,127,.06),transparent);}
+.img-placeholder{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--gray);font-size:11px;}
+.img-placeholder svg{width:48px;height:48px;opacity:.3;}
+.featured-info{padding:40px 36px;display:flex;flex-direction:column;justify-content:space-between;background:var(--white);}
+.feat-cat{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pink);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.feat-cat::before{content:'';width:16px;height:1.5px;background:var(--pink);}
+h3.feat-title{font-size:22px;font-weight:900;letter-spacing:-.5px;color:var(--dark);margin-bottom:12px;line-height:1.1;}
+.feat-desc{font-size:12px;color:var(--mid);line-height:1.8;margin-bottom:24px;}
+.feat-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:28px;}
+.tag{font-size:9.5px;font-weight:500;color:var(--mid);background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:3px 10px;transition:all .2s;}
+.tag:hover{background:var(--pink-l);color:var(--pink);border-color:var(--pink);}
+.feat-meta{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:20px;}
+.feat-year{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:1px;}
+.feat-arrow{width:40px;height:40px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;transition:background .2s,transform .2s;}
+.featured-card:hover .feat-arrow{background:var(--pink);transform:translateX(4px);}
+.feat-arrow svg{width:16px;height:16px;color:#fff;}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:60px;z-index:100;}
+.filter-inner{max-width:1100px;margin:0 auto;padding:0 48px;height:52px;display:flex;align-items:center;gap:8px;overflow-x:auto;}
+.filter-inner::-webkit-scrollbar{display:none;}
+.filter-btn{
+  white-space:nowrap;border:1.5px solid var(--border);background:var(--white);
+  border-radius:100px;padding:5px 16px;font-family:inherit;font-size:11px;
+  font-weight:600;color:var(--mid);cursor:pointer;transition:all .2s;
+}
+.filter-btn:hover{border-color:var(--pink);color:var(--pink);}
+.filter-btn.active{background:var(--pink);color:#fff;border-color:var(--pink);}
+
+/* ── PROJECTS GRID ── */
+.projects{padding:60px 48px;max-width:1100px;margin:0 auto;}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+.proj-card{
+  border:1.5px solid var(--border);border-radius:12px;
+  overflow:hidden;background:var(--white);
+  cursor:pointer;transition:transform .3s,box-shadow .3s,border-color .3s;
+  opacity:0;transform:translateY(28px);
+}
+.proj-card:hover{transform:translateY(-6px);box-shadow:0 16px 48px rgba(0,0,0,.10);border-color:var(--pink);}
+.proj-card.wide{grid-column:span 2;}
+.proj-img{
+  background:linear-gradient(135deg,#f0f0f0,#e8e8e8);
+  height:220px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.proj-card.wide .proj-img{height:260px;}
+.proj-img-ph{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--gray);font-size:10px;}
+.proj-img-ph svg{width:36px;height:36px;opacity:.25;}
+.proj-overlay{
+  position:absolute;inset:0;background:var(--pink);
+  opacity:0;display:flex;align-items:center;justify-content:center;
+  transition:opacity .3s;
+}
+.proj-card:hover .proj-overlay{opacity:.85;}
+.proj-overlay-text{color:#fff;font-size:12px;font-weight:700;letter-spacing:.5px;display:flex;align-items:center;gap:8px;}
+.proj-overlay-text svg{width:16px;height:16px;}
+.proj-body{padding:18px 20px;}
+.proj-cat-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--pink);margin-bottom:5px;}
+h3.proj-title{font-size:14px;font-weight:800;color:var(--dark);letter-spacing:-.3px;margin-bottom:6px;line-height:1.2;}
+.proj-excerpt{font-size:10.5px;color:var(--gray);line-height:1.6;margin-bottom:12px;}
+.proj-footer{display:flex;align-items:center;justify-content:space-between;}
+.proj-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.proj-year{font-size:10px;font-weight:700;color:var(--gray2, #bbb);letter-spacing:.5px;}
+
+/* ── CTA CV ── */
+.cta-cv{
+  background:var(--dark);padding:80px 48px;
+  position:relative;overflow:hidden;
+}
+.cta-cv::before{
+  content:'';position:absolute;top:-60px;left:-60px;
+  width:350px;height:350px;border-radius:50%;
+  background:radial-gradient(circle,rgba(224,0,127,.15) 0%,transparent 70%);
+  pointer-events:none;animation:pulse 4s ease-in-out infinite;
+}
+.cta-cv::after{
+  content:'';position:absolute;bottom:-80px;right:-40px;
+  width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(224,0,127,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+.cta-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:60px;align-items:center;position:relative;z-index:1;}
+.cta-eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pink);display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.cta-eyebrow::before{content:'';width:20px;height:1.5px;background:var(--pink);}
+h2.cta-title{font-size:clamp(28px,4vw,52px);font-weight:900;letter-spacing:-2px;line-height:.95;color:#fff;margin-bottom:16px;}
+h2.cta-title em{font-style:normal;color:var(--pink);}
+.cta-sub{font-size:13px;color:rgba(255,255,255,.45);line-height:1.7;max-width:480px;}
+.cta-actions{display:flex;flex-direction:column;gap:10px;flex-shrink:0;}
+
+/* ── FOOTER ── */
+footer{background:var(--dark);border-top:1px solid rgba(255,255,255,.06);padding:32px 48px;}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+/* Logo versión negativa = blanco */
+.footer-logo{font-size:14px;font-weight:900;letter-spacing:-.3px;color:#fff;text-decoration:none;}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-size:11px;color:rgba(255,255,255,.3);text-decoration:none;font-weight:500;transition:color .2s;}
+.footer-links a:hover{color:var(--pink);}
+.footer-copy{font-size:10px;color:rgba(255,255,255,.2);}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:16px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;transform:translateY(24px) scale(.97);transition:transform .35s cubic-bezier(.175,.885,.32,1.275);position:relative;}
+.modal-overlay.open .modal{transform:translateY(0) scale(1);}
+.modal-img{background:linear-gradient(135deg,#f0f0f0,#ddd);height:280px;display:flex;align-items:center;justify-content:center;border-radius:14px 14px 0 0;}
+.modal-img svg{width:56px;height:56px;opacity:.2;}
+.modal-body{padding:32px;}
+.modal-cat{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pink);display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.modal-cat::before{content:'';width:16px;height:1.5px;background:var(--pink);}
+h3.modal-title{font-size:22px;font-weight:900;letter-spacing:-.5px;margin-bottom:12px;}
+.modal-desc{font-size:12.5px;color:var(--mid);line-height:1.8;margin-bottom:20px;}
+.modal-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:24px;}
+.modal-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.06);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;color:var(--dark);}
+.modal-close:hover{background:var(--pink);color:#fff;}
+.modal-close svg{width:16px;height:16px;}
+.modal-meta{display:flex;gap:20px;font-size:11px;color:var(--gray);border-top:1px solid var(--border);padding-top:16px;}
+.modal-meta span{display:flex;align-items:center;gap:5px;}
+.modal-meta svg{width:12px;height:12px;}
+
+/* ── REVEAL ── */
+.rv{opacity:0;transform:translateY(24px);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  .hero-inner{grid-template-columns:1fr;}
+  .hero-right{order:-1;}
+  .featured-card{grid-template-columns:1fr;}
+  .featured-img{min-height:260px;}
+  .grid{grid-template-columns:1fr 1fr;}
+  .proj-card.wide{grid-column:span 1;}
+  .cta-inner{grid-template-columns:1fr;}
+  .cta-actions{flex-direction:row;}
+  .nav{padding:0 24px;}
+  .nav-links{display:none;}
+  .nav-menu-btn{display:flex;}
+  .hero,.featured,.projects,.cta-cv,footer,.filter-inner{padding-left:24px;padding-right:24px;}
+  .filter-inner{padding-left:16px;padding-right:16px;}
+}
+@media(max-width:600px){
+  .hero{padding:100px 20px 60px;}
+  .featured{padding:48px 20px;}
+  .projects{padding:40px 20px;}
+  .cta-cv{padding:60px 20px;}
+  footer{padding:24px 20px;}
+  .grid{grid-template-columns:1fr;}
+  h1.hero-title{letter-spacing:-2px;}
+  .hero-stats{grid-template-columns:1fr 1fr;}
+  .filter-inner{padding:0 12px;}
+  .cta-actions{flex-direction:column;}
+  .footer-inner{flex-direction:column;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="C"></div>
+<div class="cursor-ring" id="CR"></div>
+<div class="progress" id="PB"></div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-logo">Ǝ&nbsp;ESCRICHS</a>
+  <div class="nav-links">
+    <a href="#proyectos">Proyectos</a>
+    <a href="#branding">Branding</a>
+    <a href="#uxui">UX/UI</a>
+    <a href="#motion">Motion</a>
+    <a href="#ilustracion">Ilustración</a>
+  </div>
+  <div class="nav-cta">
+    <a href="cv.html" class="btn btn-ghost">Ver CV ↗</a>
+  </div>
+  <button class="nav-menu-btn" id="mBtn">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+
+<div class="mobile-nav" id="mNav">
+  <button class="mobile-close" id="mClose">✕</button>
+  <a href="#proyectos">Proyectos</a>
+  <a href="#branding">Branding</a>
+  <a href="#uxui">UX/UI</a>
+  <a href="#motion">Motion</a>
+  <a href="#ilustracion">Ilustración</a>
+  <a href="cv.html" class="btn" style="margin-top:16px;justify-content:center;">Ver CV completo ↗</a>
+</div>
+<div class="nav-overlay" id="mOv"></div>
+
+<button class="scroll-top" id="ST"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg></button>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow" id="hEy">Portfolio Creativo · 2026</div>
+      <h1 class="hero-title" id="hT">
+        <span class="tl">Diseño.</span>
+        <span class="tl">Estrategia.</span>
+        <span class="tl"><em>Impacto.</em></span>
+      </h1>
+      <p class="hero-desc" id="hD">Proyectos seleccionados en <strong>Branding, UX/UI, Motion, Ilustración y Dirección de Proyectos Digitales</strong>. Más de 15 años creando experiencias que conectan marcas con personas.</p>
+      <div class="hero-actions" id="hA">
+        <a href="#proyectos" class="btn">Ver proyectos ↓</a>
+        <a href="cv.html" class="btn btn-ghost">CV completo ↗</a>
+      </div>
+    </div>
+    <div class="hero-right" id="hR">
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-n" data-c="15">0<span>+</span></div><div class="hstat-l">Años de experiencia</div></div>
+        <div class="hstat"><div class="hstat-n" data-c="40">0<span>+</span></div><div class="hstat-l">Proyectos realizados</div></div>
+        <div class="hstat"><div class="hstat-n" data-c="6">0<span>+</span></div><div class="hstat-l">Empresas cliente</div></div>
+        <div class="hstat"><div class="hstat-n" data-c="5">0<span></span></div><div class="hstat-l">Áreas de especialización</div></div>
+      </div>
+      <div class="hero-cats">
+        <span class="cat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Branding & Marketing</span>
+        <span class="cat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>UX/UI Design</span>
+        <span class="cat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="5 3 19 12 5 21 5 3"/></svg>Motion & Animación</span>
+        <span class="cat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5z"/></svg>Ilustración & Art Direction</span>
+        <span class="cat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 0 1 0 10h-2M11 12h2"/></svg>Digital Project Manager</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED PROJECT -->
+<section class="featured rv" id="destacado">
+  <div class="featured-inner">
+    <div class="sec-eyebrow">Proyecto Destacado</div>
+    <h2 class="sec-title">Selección del autor</h2>
+    <div class="featured-card" onclick="openModal(0)">
+      <div class="featured-img">
+        <div class="img-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Imagen del proyecto</span>
+        </div>
+      </div>
+      <div class="featured-info">
+        <div>
+          <div class="feat-cat">Branding & Marketing</div>
+          <h3 class="feat-title">Identidad Corporativa Experian EMEA</h3>
+          <p class="feat-desc">Desarrollo y estandarización de la identidad visual para los mercados europeos de Experian. Sistema de design tokens, guía de marca y producción de assets para campañas integradas en 8 países.</p>
+          <div class="feat-tags">
+            <span class="tag">Brand Identity</span>
+            <span class="tag">Design System</span>
+            <span class="tag">Adobe CC</span>
+            <span class="tag">Campañas</span>
+            <span class="tag">EMEA</span>
+          </div>
+        </div>
+        <div class="feat-meta">
+          <span class="feat-year">2022 — 2024</span>
+          <div class="feat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-bar" id="proyectos">
+  <div class="filter-inner">
+    <button class="filter-btn active" data-filter="all">Todos</button>
+    <button class="filter-btn" data-filter="branding" id="branding">Branding & Marketing</button>
+    <button class="filter-btn" data-filter="uxui" id="uxui">UX/UI Design</button>
+    <button class="filter-btn" data-filter="motion" id="motion">Motion & Animación</button>
+    <button class="filter-btn" data-filter="ilustracion" id="ilustracion">Ilustración & Art Direction</button>
+    <button class="filter-btn" data-filter="pm">Digital Project Manager</button>
+  </div>
+</div>
+
+<!-- PROJECTS GRID -->
+<div class="projects">
+  <div class="grid" id="grid">
+
+    <!-- BRANDING -->
+    <div class="proj-card wide" data-cat="branding" onclick="openModal(1)">
+      <div class="proj-img">
+        <div class="proj-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Imagen del proyecto</span></div>
+        <div class="proj-overlay"><span class="proj-overlay-text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Ver proyecto</span></div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-cat-label">Branding & Marketing</div>
+        <h3 class="proj-title">Rebranding Giunti Psychometrics</h3>
+        <p class="proj-excerpt">Estrategia de marca y rediseño de identidad visual corporativa para mercados internacionales.</p>
+        <div class="proj-footer">
+          <div class="proj-tags"><span class="tag">Branding</span><span class="tag">Strategy</span><span class="tag">Corporate</span></div>
+          <span class="proj-year">2025</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card" data-cat="uxui" onclick="openModal(2)">
+      <div class="proj-img">
+        <div class="proj-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Imagen del proyecto</span></div>
+        <div class="proj-overlay"><span class="proj-overlay-text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Ver proyecto</span></div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-cat-label">UX/UI Design</div>
+        <h3 class="proj-title">Dashboard Analytics Axesor</h3>
+        <p class="proj-excerpt">Diseño de producto UX/UI para plataforma de inteligencia empresarial B2B.</p>
+        <div class="proj-footer">
+          <div class="proj-tags"><span class="tag">Figma</span><span class="tag">UX</span><span class="tag">B2B</span></div>
+          <span class="proj-year">2020</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card" data-cat="motion" onclick="openModal(3)">
+      <div class="proj-img">
+        <div class="proj-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Imagen del proyecto</span></div>
+        <div class="proj-overlay"><span class="proj-overlay-text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Ver proyecto</span></div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-cat-label">Motion & Animación</div>
+        <h3 class="proj-title">Campaña Motion Experian</h3>
+        <p class="proj-excerpt">Serie de piezas animadas para campaña de producto en mercados europeos.</p>
+        <div class="proj-footer">
+          <div class="proj-tags"><span class="tag">After Effects</span><span class="tag">Motion</span></div>
+          <span class="proj-year">2023</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card" data-cat="ilustracion" onclick="openModal(4)">
+      <div class="proj-img">
+        <div class="proj-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5z"/></svg><span>Imagen del proyecto</span></div>
+        <div class="proj-overlay"><span class="proj-overlay-text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Ver proyecto</span></div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-cat-label">Ilustración & Art Direction</div>
+        <h3 class="proj-title">Editorial Saants DI</h3>
+        <p class="proj-excerpt">Dirección de arte e ilustración para publicaciones editoriales y campañas impresas.</p>
+        <div class="proj-footer">
+          <div class="proj-tags"><span class="tag">Ilustración</span><span class="tag">Editorial</span></div>
+          <span class="proj-year">2013</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card" data-cat="pm" onclick="openModal(5)">
+      <div class="proj-img">
+        <div class="proj-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 0 1 0 10h-2M11 12h2"/></svg><span>Imagen del proyecto</span></div>
+        <div class="proj-overlay"><span class="proj-overlay-text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Ver proyecto</span></div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-cat-label">Digital Project Manager</div>
+        <h3 class="proj-title">Lanzamiento Producto Digital Axesor</h3>
+        <p class="proj-excerpt">Coordinación end-to-end del lanzamiento de nueva línea de producto digital en el mercado español.</p>
+        <div class="proj-footer">
+          <div class="proj-tags"><span class="tag">PM</span><span class="tag">Strategy</span><span class="tag">Launch</span></div>
+          <span class="proj-year">2019</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card wide" data-cat="uxui" onclick="openModal(6)">
+      <div class="proj-img">
+        <div class="proj-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Imagen del proyecto</span></div>
+        <div class="proj-overlay"><span class="proj-overlay-text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Ver proyecto</span></div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-cat-label">UX/UI Design</div>
+        <h3 class="proj-title">Web App Axesor — Redesign completo</h3>
+        <p class="proj-excerpt">Rediseño integral de la plataforma principal: arquitectura de información, sistema de componentes y guía de estilos.</p>
+        <div class="proj-footer">
+          <div class="proj-tags"><span class="tag">Figma</span><span class="tag">Design System</span><span class="tag">Web App</span><span class="tag">UX Research</span></div>
+          <span class="proj-year">2018</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card" data-cat="branding" onclick="openModal(7)">
+      <div class="proj-img">
+        <div class="proj-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Imagen del proyecto</span></div>
+        <div class="proj-overlay"><span class="proj-overlay-text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Ver proyecto</span></div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-cat-label">Branding & Marketing</div>
+        <h3 class="proj-title">Campaña Integrada Adyta NL</h3>
+        <p class="proj-excerpt">Desarrollo de campaña de comunicación on/offline para cliente internacional en Países Bajos.</p>
+        <div class="proj-footer">
+          <div class="proj-tags"><span class="tag">Campaña</span><span class="tag">360°</span><span class="tag">International</span></div>
+          <span class="proj-year">2014</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="proj-card" data-cat="motion" onclick="openModal(8)">
+      <div class="proj-img">
+        <div class="proj-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Imagen del proyecto</span></div>
+        <div class="proj-overlay"><span class="proj-overlay-text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Ver proyecto</span></div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-cat-label">Motion & Animación</div>
+        <h3 class="proj-title">Animación 3D Kandor Graphics</h3>
+        <p class="proj-excerpt">Proyecto de animación avanzada de personajes 3D desarrollado durante el Máster en Kandor.</p>
+        <div class="proj-footer">
+          <div class="proj-tags"><span class="tag">3D</span><span class="tag">Animación</span><span class="tag">Characters</span></div>
+          <span class="proj-year">2012</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CTA CV -->
+<section class="cta-cv rv" id="cv-link">
+  <div class="cta-inner">
+    <div>
+      <div class="cta-eyebrow">¿Quieres saber más?</div>
+      <h2 class="cta-title">Experiencia,<br>skills & <em>trayectoria.</em></h2>
+      <p class="cta-sub">Consulta el CV completo con toda la información sobre mi experiencia profesional, conocimientos técnicos, formación y datos de contacto.</p>
+    </div>
+    <div class="cta-actions">
+      <a href="cv.html" class="btn" style="font-size:13px;padding:14px 28px;">Ver CV completo ↗</a>
+      <a href="mailto:albertescrichs@gmail.com" class="btn btn-ghost" style="font-size:13px;padding:14px 28px;color:#fff;border-color:rgba(255,255,255,.2);">Contactar</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<!-- Logo versión negativa = #fff sobre fondo oscuro -->
+<footer>
+  <div class="footer-inner">
+    <a href="#" class="footer-logo">Ǝ&nbsp;ESCRICHS</a>
+    <div class="footer-links">
+      <a href="cv.html">CV Online</a>
+      <a href="mailto:albertescrichs@gmail.com">Email</a>
+      <a href="https://es.linkedin.com/in/albertescrichs" target="_blank">LinkedIn</a>
+    </div>
+    <span class="footer-copy">© 2026 · Albert Escrichs · Portfolio Creativo</span>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOv" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-img"><svg viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+    <div class="modal-body">
+      <div class="modal-cat" id="mCat"></div>
+      <h3 class="modal-title" id="mTitle"></h3>
+      <p class="modal-desc" id="mDesc"></p>
+      <div class="modal-tags" id="mTags"></div>
+      <div class="modal-meta" id="mMeta"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────
+const projects = [
+  {cat:'Branding & Marketing',title:'Identidad Corporativa Experian EMEA',desc:'Desarrollo y estandarización de la identidad visual para los mercados europeos de Experian. Sistema de design tokens, guía de marca completa y producción de assets para campañas integradas en 8 países. Coordinación con equipos locales y globales para garantizar coherencia visual en todos los canales.',tags:['Brand Identity','Design System','Adobe CC','Campañas','EMEA'],year:'2022 — 2024',client:'Experian'},
+  {cat:'Branding & Marketing',title:'Rebranding Giunti Psychometrics',desc:'Estrategia de marca y rediseño completo de identidad visual corporativa para los mercados internacionales de Giunti Psychometrics. Definición de tono de voz, paleta cromática, sistema tipográfico y assets para campañas globales.',tags:['Branding','Strategy','Corporate','International'],year:'2025',client:'Giunti Psychometrics'},
+  {cat:'UX/UI Design',title:'Dashboard Analytics Axesor',desc:'Diseño de producto UX/UI para la plataforma de inteligencia empresarial B2B de Axesor. Research, arquitectura de información, wireframes, prototipado en Figma y entrega de design specs al equipo de desarrollo.',tags:['Figma','UX Research','B2B','Dashboard','Data Viz'],year:'2020',client:'Axesor'},
+  {cat:'Motion & Animación',title:'Campaña Motion Experian',desc:'Serie de piezas animadas para campaña de producto en mercados europeos. Diseño y producción de motion graphics para redes sociales, display advertising y presentaciones corporativas.',tags:['After Effects','Motion Graphics','Social Media','Display'],year:'2023',client:'Experian'},
+  {cat:'Ilustración & Art Direction',title:'Editorial Saants DI',desc:'Dirección de arte e ilustración para publicaciones editoriales y campañas impresas de Saants DI. Concepto visual, estilo gráfico y producción final de piezas para medios impresos y digitales.',tags:['Ilustración','Editorial','Art Direction','Print'],year:'2013',client:'Saants DI'},
+  {cat:'Digital Project Manager',title:'Lanzamiento Producto Digital Axesor',desc:'Coordinación end-to-end del lanzamiento de nueva línea de producto digital en el mercado español. Gestión de equipos de diseño, desarrollo y marketing. Control de timings, presupuestos y entregables. Resultados: lanzamiento en plazo con +30% sobre KPIs iniciales.',tags:['PM','Strategy','Launch','Agile','Jira'],year:'2019',client:'Axesor'},
+  {cat:'UX/UI Design',title:'Web App Axesor — Redesign completo',desc:'Rediseño integral de la plataforma principal de Axesor: arquitectura de información, sistema de componentes reutilizables, guía de estilos y handoff a desarrollo. Proyecto de 18 meses con impacto directo en retención de usuarios.',tags:['Figma','Design System','Web App','UX Research','Components'],year:'2018',client:'Axesor'},
+  {cat:'Branding & Marketing',title:'Campaña Integrada Adyta NL',desc:'Desarrollo de campaña de comunicación on/offline para cliente internacional en Países Bajos. Concepto creativo, producción de materiales impresos y digitales, y coordinación con equipos locales.',tags:['Campaña','360°','International','Print','Digital'],year:'2014',client:'Adyta'},
+  {cat:'Motion & Animación',title:'Animación 3D Kandor Graphics',desc:'Proyecto de animación avanzada de personajes 3D desarrollado durante el Máster en Kandor Graphics en colaboración con la Universidad de Granada. Rigging, skinning, animación de ciclos y renderizado final.',tags:['3D','Cinema 4D','Animación','Characters','Rigging'],year:'2012',client:'Kandor Graphics / UGR'},
+];
+
+// ── GSAP INIT ─────────────────────────────────────
+gsap.registerPlugin(ScrollTrigger);
+
+$(function(){
+
+  // Hero
+  const tl = gsap.timeline({defaults:{ease:'power3.out'}});
+  tl.to('#hEy',   {opacity:1,x:0,duration:.7,delay:.3})
+    .to('.tl',    {y:'0%',duration:.9,stagger:.1,ease:'power4.out'},'<.1')
+    .to('#hD',    {opacity:1,y:0,duration:.7},'<.3')
+    .to('#hA',    {opacity:1,duration:.6},'<.15')
+    .to('#hR',    {opacity:1,duration:.8},'<.2');
+
+  // Counter
+  $('[data-c]').each(function(){
+    const el=$(this), target=+el.data('c'), sfx=el.find('span').prop('outerHTML')||'';
+    ScrollTrigger.create({trigger:el[0],start:'top 85%',once:true,onEnter:()=>{
+      $({n:0}).animate({n:target},{duration:1400,easing:'swing',
+        step:function(){el.html(Math.floor(this.n)+sfx);},
+        complete:function(){el.html(target+sfx);}});
+    }});
+  });
+
+  // Reveal
+  gsap.utils.toArray('.rv').forEach(el=>{
+    gsap.fromTo(el,{opacity:0,y:28},{opacity:1,y:0,duration:.75,ease:'power3.out',
+      scrollTrigger:{trigger:el,start:'top 85%'}});
+  });
+
+  // Cards
+  gsap.utils.toArray('.proj-card').forEach((c,i)=>{
+    gsap.to(c,{opacity:1,y:0,duration:.65,ease:'power3.out',delay:(i%3)*.1,
+      scrollTrigger:{trigger:c,start:'top 90%'}});
+  });
+
+  // Featured
+  gsap.fromTo('.featured-card',{opacity:0,y:32},{opacity:1,y:0,duration:.8,ease:'power3.out',
+    scrollTrigger:{trigger:'.featured-card',start:'top 85%'}});
+
+  // CTA
+  gsap.fromTo('.cta-inner',{opacity:0,y:32},{opacity:1,y:0,duration:.8,ease:'power3.out',
+    scrollTrigger:{trigger:'.cta-inner',start:'top 80%'}});
+
+  // Filter
+  $('.filter-btn').on('click',function(){
+    const f=$(this).data('filter');
+    $('.filter-btn').removeClass('active');
+    $(this).addClass('active');
+    if(f==='all'){
+      $('.proj-card').show().css('opacity',1);
+    } else {
+      $('.proj-card').each(function(){
+        $(this).data('cat')===f ? $(this).show().css('opacity',1) : $(this).hide();
+      });
+    }
+    // Reflow grid wide cards
+    $('.proj-card.wide').each(function(){
+      if($(this).is(':visible') && f!=='all'){$(this).removeClass('wide');}
+      else if(f==='all'){
+        // restore wide on first & last
+      }
+    });
+  });
+
+  // Scroll
+  $(window).on('scroll',function(){
+    const sy=$(this).scrollTop(), wh=$(this).height(), dh=$(document).height();
+    sy>40 ? $('#nav').addClass('s') : $('#nav').removeClass('s');
+    $('#PB').css('width',(sy/(dh-wh))*100+'%');
+    sy>400 ? $('#ST').addClass('on') : $('#ST').removeClass('on');
+  });
+
+  $('#ST').on('click',()=>$('html,body').animate({scrollTop:0},600));
+
+  // Smooth scroll
+  $('a[href^="#"]').on('click',function(e){
+    const t=$(this.getAttribute('href'));
+    if(t.length){e.preventDefault();$('html,body').animate({scrollTop:t.offset().top-60},700);}
+  });
+
+  // Mobile nav
+  $('#mBtn').on('click',()=>{$('#mNav').addClass('open');$('#mOv').addClass('on');});
+  $('#mClose,#mOv').on('click',()=>{$('#mNav').removeClass('open');$('#mOv').removeClass('on');});
+  $('#mNav a').on('click',()=>{$('#mNav').removeClass('open');$('#mOv').removeClass('on');});
+
+  // Cursor
+  $(document).on('mousemove',e=>{
+    gsap.to('#C',{x:e.clientX,y:e.clientY,duration:.1});
+    gsap.to('#CR',{x:e.clientX,y:e.clientY,duration:.35});
+  });
+  $('a,button,.proj-card,.featured-card,.hstat,.cat-pill,.tag').on('mouseenter',()=>{
+    $('#C,#CR').addClass('h');
+  }).on('mouseleave',()=>$('#C,#CR').removeClass('h'));
+
+});
+
+// ── MODAL ─────────────────────────────────────────
+function openModal(i){
+  const p=projects[i];
+  if(!p) return;
+  $('#mCat').text(p.cat);
+  $('#mTitle').text(p.title);
+  $('#mDesc').text(p.desc);
+  $('#mTags').html(p.tags.map(t=>`<span class="tag">${t}</span>`).join(''));
+  $('#mMeta').html(`
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${p.year}</span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>${p.client}</span>
+  `);
+  $('#modalOv').addClass('open');
+  $('body').css('overflow','hidden');
+}
+function closeModal(e){
+  if(e && $(e.target).closest('.modal').length) return;
+  $('#modalOv').removeClass('open');
+  $('body').css('overflow','');
+}
+$(document).on('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>
